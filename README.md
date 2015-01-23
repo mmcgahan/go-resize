@@ -23,3 +23,11 @@ http://localhost/200/400/www.example.com/theImage.jpg
 
 1. https sources _only_
 2. Jpegs _only_
+
+**TODO**
+
+- reduce image.Image copying
+- reference implementations of different imaging libraries
+- performance testing
+- manual crop position control (not just SmartCrop)
+
