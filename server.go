@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"os"
 	//"github.com/lazywei/go-opencv/opencv"
 	"github.com/disintegration/imaging"
 	"github.com/muesli/smartcrop"
@@ -81,7 +82,7 @@ func main() {
 	http.Handle("/", r)
 
 	fmt.Printf("Starting http Server ...\n")
-	err := http.ListenAndServe("0.0.0.0:8000", nil)
+	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
