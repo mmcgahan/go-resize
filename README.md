@@ -1,2 +1,4 @@
-# go-resize
-Simple image resizing web service
+goilerplate
+===========
+
+A simpler Golang server boilerplate
