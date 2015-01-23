@@ -3,25 +3,19 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/lazywei/go-opencv/opencv"
+	//"github.com/lazywei/go-opencv/opencv"
+	"github.com/disintegration/imaging"
 	"github.com/muesli/smartcrop"
+	"image"
 	"image/jpeg"
 	"log"
 	"net/http"
 	"strconv"
 )
 
-func ResizeHandler(w http.ResponseWriter, r *http.Request) {
-	v := mux.Vars(r)
-	width, _ := v["width"]
-	height, _ := v["height"]
-	imageUrl, _ := v["imageUrl"]
-
-	x, _ := strconv.Atoi(width)
-	y, _ := strconv.Atoi(height)
-
+func getImg(url string) image.Image {
 	// get the requested image
-	res, err := http.Get("https://" + imageUrl)
+	res, err := http.Get("https://" + url)
 	if err != nil || res.StatusCode != 200 {
 		panic(err)
 	}
@@ -32,34 +26,52 @@ func ResizeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	return m
+}
 
-	srcWidth := m.Bounds().Size().X
-	srcHeight := m.Bounds().Size().Y
+func getFillCrop(src image.Image, targetRatio float32) (smartcrop.Crop, error) {
+	srcWidth := src.Bounds().Size().X
+	srcHeight := src.Bounds().Size().Y
 	newWidth := srcWidth
 	newHeight := srcHeight
 	srcRatio := float32(srcWidth) / float32(srcHeight)
-	targetRatio := float32(x) / float32(y)
-	// smart crop
 	if srcRatio > targetRatio {
-		// height stays the same
-		newHeight = int(float32(srcWidth) / targetRatio)
-	} else {
 		// width stays the same
+		newHeight = int(float32(srcWidth) / targetRatio)
+	}
+	if srcRatio < targetRatio {
+		// height stays the same
 		newWidth = int(float32(srcHeight) * targetRatio)
 	}
-	topCrop, _ := smartcrop.SmartCrop(&m, newWidth, newHeight)
-	// convert to opencv image
-	srcImage := opencv.FromImage(m)
-	if srcImage == nil {
-		fmt.Printf("Couldn't create opencv Image")
-	}
-	defer srcImage.Release()
 
-	// resize using x/y dimensions
-	// constrain proportions by cropping
-	croppedImage := opencv.Crop(srcImage, topCrop.X, topCrop.Y, topCrop.Width, topCrop.Height)
-	resizedImage := opencv.Resize(croppedImage, x, y, opencv.CV_INTER_LINEAR)
-	jpeg.Encode(w, resizedImage.ToImage(), &jpeg.Options{Quality: 90})
+	return smartcrop.SmartCrop(&src, newWidth, newHeight)
+}
+
+func ResizeHandler(w http.ResponseWriter, r *http.Request) {
+	// parse url vars
+	v := mux.Vars(r)
+	width, _ := v["width"]
+	height, _ := v["height"]
+	x, _ := strconv.Atoi(width)
+	y, _ := strconv.Atoi(height)
+
+	imageUrl, _ := v["imageUrl"]
+	m := getImg(imageUrl)
+
+	cropBox, _ := getFillCrop(m, float32(x)/float32(y))
+	cropRect := image.Rect(cropBox.X, cropBox.Y, cropBox.X+cropBox.Width, cropBox.Y+cropBox.Height)
+	croppedImg := imaging.Crop(m, cropRect)
+
+	// convert to opencv image
+	//srcImage := opencv.FromImage(m)
+	//if srcImage == nil {
+	//  fmt.Printf("Couldn't create opencv Image")
+	//}
+	//defer srcImage.Release()
+	//croppedImage := opencv.Crop(srcImage, cropBox.X, cropBox.Y, cropBox.Width, cropBox.Height)
+	//resizedImage := opencv.Resize(croppedImage, x, y, opencv.CV_INTER_LINEAR)
+	resizedImage := imaging.Resize(croppedImg, x, y, imaging.CatmullRom)
+	jpeg.Encode(w, resizedImage, &jpeg.Options{Quality: 90})
 }
 
 func main() {

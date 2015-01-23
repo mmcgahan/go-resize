@@ -1,1 +1,1 @@
-web: go-resize
+web: server
