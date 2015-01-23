@@ -1,0 +1,27 @@
+{
+	"ImportPath": "github.com/mmcgahan/go-resize",
+	"GoVersion": "go1.4.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
+		},
+		{
+			"ImportPath": "github.com/lazywei/go-opencv/opencv",
+			"Rev": "a2b8af12d40ba0a35a668890796a03d6aa6f5eb3"
+		},
+		{
+			"ImportPath": "github.com/muesli/smartcrop",
+			"Comment": "0.1.1",
+			"Rev": "1e9f6fae8da3b817daf2f8b04f9a615a3790bc43"
+		},
+		{
+			"ImportPath": "github.com/nfnt/resize",
+			"Rev": "8f4493144849aa7855fc525f5953c439180e6f25"
+		}
+	]
+}
